@@ -1,0 +1,895 @@
+# proto-file: tensorflow/core/framework/graph.proto
+# proto-message: tensorflow.GraphDef
+#
+# MEP Room Equipment Placement - Minimal Example
+# Room: 10m x 8m (10000mm x 8000mm in microns for compatibility)
+#
+# This is a minimal MEP room that runs out-of-box with AlphaChip.
+# Equipment modeled as soft macros (Grp_*), entry points as ports.
+# Connections (pipes/ducts) modeled as nets - will minimize total length.
+#
+# LIMITATIONS (not modeled):
+# - Per-side clearances (not supported)
+# - Access paths (not supported)
+# - Route feasibility check (only optimizes length)
+# - Non-rectangular rooms (use blockages as workaround)
+
+# ============================================================
+# PORTS - Room entry points (fixed on walls)
+# ============================================================
+
+# Chilled water riser - left wall
+node {
+  name: "chilled_water_riser"
+  input: "Grp_Pump/Pinput_chw"
+  attr {
+    key: "side"
+    value {
+      placeholder: "LEFT"
+    }
+  }
+  attr {
+    key: "type"
+    value {
+      placeholder: "PORT"
+    }
+  }
+  attr {
+    key: "x"
+    value {
+      f: 0.0
+    }
+  }
+  attr {
+    key: "y"
+    value {
+      f: 4000.0
+    }
+  }
+}
+
+# Electrical entry - left wall, lower
+node {
+  name: "electrical_entry"
+  input: "Grp_Panel/Pinput_power"
+  attr {
+    key: "side"
+    value {
+      placeholder: "LEFT"
+    }
+  }
+  attr {
+    key: "type"
+    value {
+      placeholder: "PORT"
+    }
+  }
+  attr {
+    key: "x"
+    value {
+      f: 0.0
+    }
+  }
+  attr {
+    key: "y"
+    value {
+      f: 2000.0
+    }
+  }
+}
+
+# Supply air duct - top wall
+node {
+  name: "supply_air_duct"
+  attr {
+    key: "side"
+    value {
+      placeholder: "TOP"
+    }
+  }
+  attr {
+    key: "type"
+    value {
+      placeholder: "PORT"
+    }
+  }
+  attr {
+    key: "x"
+    value {
+      f: 7000.0
+    }
+  }
+  attr {
+    key: "y"
+    value {
+      f: 8000.0
+    }
+  }
+}
+
+# Exhaust duct - top wall
+node {
+  name: "exhaust_duct"
+  attr {
+    key: "side"
+    value {
+      placeholder: "TOP"
+    }
+  }
+  attr {
+    key: "type"
+    value {
+      placeholder: "PORT"
+    }
+  }
+  attr {
+    key: "x"
+    value {
+      f: 3000.0
+    }
+  }
+  attr {
+    key: "y"
+    value {
+      f: 8000.0
+    }
+  }
+}
+
+# ============================================================
+# EQUIPMENT - Soft macros (will be placed by RL)
+# ============================================================
+
+# AHU (Air Handling Unit) - 2.5m x 1.5m = 2500mm x 1500mm
+node {
+  name: "Grp_AHU"
+  attr {
+    key: "height"
+    value {
+      f: 1500.0
+    }
+  }
+  attr {
+    key: "type"
+    value {
+      placeholder: "macro"
+    }
+  }
+  attr {
+    key: "width"
+    value {
+      f: 2500.0
+    }
+  }
+  attr {
+    key: "x"
+    value {
+      f: 5000.0
+    }
+  }
+  attr {
+    key: "y"
+    value {
+      f: 5000.0
+    }
+  }
+}
+
+# AHU input pin - chilled water
+node {
+  name: "Grp_AHU/Pinput_chw"
+  attr {
+    key: "macro_name"
+    value {
+      placeholder: "Grp_AHU"
+    }
+  }
+  attr {
+    key: "type"
+    value {
+      placeholder: "macro_pin"
+    }
+  }
+  attr {
+    key: "x"
+    value {
+      f: 5000.0
+    }
+  }
+  attr {
+    key: "x_offset"
+    value {
+      f: -1250.0
+    }
+  }
+  attr {
+    key: "y"
+    value {
+      f: 5000.0
+    }
+  }
+  attr {
+    key: "y_offset"
+    value {
+      f: 0.0
+    }
+  }
+}
+
+# AHU output pin - supply air
+node {
+  name: "Grp_AHU/Poutput_air"
+  input: "supply_air_duct"
+  attr {
+    key: "macro_name"
+    value {
+      placeholder: "Grp_AHU"
+    }
+  }
+  attr {
+    key: "type"
+    value {
+      placeholder: "macro_pin"
+    }
+  }
+  attr {
+    key: "x"
+    value {
+      f: 5000.0
+    }
+  }
+  attr {
+    key: "x_offset"
+    value {
+      f: 0.0
+    }
+  }
+  attr {
+    key: "y"
+    value {
+      f: 5000.0
+    }
+  }
+  attr {
+    key: "y_offset"
+    value {
+      f: 750.0
+    }
+  }
+}
+
+# AHU power input pin
+node {
+  name: "Grp_AHU/Pinput_power"
+  attr {
+    key: "macro_name"
+    value {
+      placeholder: "Grp_AHU"
+    }
+  }
+  attr {
+    key: "type"
+    value {
+      placeholder: "macro_pin"
+    }
+  }
+  attr {
+    key: "x"
+    value {
+      f: 5000.0
+    }
+  }
+  attr {
+    key: "x_offset"
+    value {
+      f: 1250.0
+    }
+  }
+  attr {
+    key: "y"
+    value {
+      f: 5000.0
+    }
+  }
+  attr {
+    key: "y_offset"
+    value {
+      f: 0.0
+    }
+  }
+}
+
+# Pump - 1.2m x 0.8m = 1200mm x 800mm
+node {
+  name: "Grp_Pump"
+  attr {
+    key: "height"
+    value {
+      f: 800.0
+    }
+  }
+  attr {
+    key: "type"
+    value {
+      placeholder: "macro"
+    }
+  }
+  attr {
+    key: "width"
+    value {
+      f: 1200.0
+    }
+  }
+  attr {
+    key: "x"
+    value {
+      f: 2000.0
+    }
+  }
+  attr {
+    key: "y"
+    value {
+      f: 4000.0
+    }
+  }
+}
+
+# Pump input pin - chilled water from riser
+node {
+  name: "Grp_Pump/Pinput_chw"
+  attr {
+    key: "macro_name"
+    value {
+      placeholder: "Grp_Pump"
+    }
+  }
+  attr {
+    key: "type"
+    value {
+      placeholder: "macro_pin"
+    }
+  }
+  attr {
+    key: "x"
+    value {
+      f: 2000.0
+    }
+  }
+  attr {
+    key: "x_offset"
+    value {
+      f: -600.0
+    }
+  }
+  attr {
+    key: "y"
+    value {
+      f: 4000.0
+    }
+  }
+  attr {
+    key: "y_offset"
+    value {
+      f: 0.0
+    }
+  }
+}
+
+# Pump output pin - chilled water to AHU
+node {
+  name: "Grp_Pump/Poutput_chw"
+  input: "Grp_AHU/Pinput_chw"
+  attr {
+    key: "macro_name"
+    value {
+      placeholder: "Grp_Pump"
+    }
+  }
+  attr {
+    key: "type"
+    value {
+      placeholder: "macro_pin"
+    }
+  }
+  attr {
+    key: "x"
+    value {
+      f: 2000.0
+    }
+  }
+  attr {
+    key: "x_offset"
+    value {
+      f: 600.0
+    }
+  }
+  attr {
+    key: "y"
+    value {
+      f: 4000.0
+    }
+  }
+  attr {
+    key: "y_offset"
+    value {
+      f: 0.0
+    }
+  }
+}
+
+# Pump power input pin
+node {
+  name: "Grp_Pump/Pinput_power"
+  attr {
+    key: "macro_name"
+    value {
+      placeholder: "Grp_Pump"
+    }
+  }
+  attr {
+    key: "type"
+    value {
+      placeholder: "macro_pin"
+    }
+  }
+  attr {
+    key: "x"
+    value {
+      f: 2000.0
+    }
+  }
+  attr {
+    key: "x_offset"
+    value {
+      f: 0.0
+    }
+  }
+  attr {
+    key: "y"
+    value {
+      f: 4000.0
+    }
+  }
+  attr {
+    key: "y_offset"
+    value {
+      f: -400.0
+    }
+  }
+}
+
+# Electrical Panel - 0.8m x 2.0m = 800mm x 2000mm
+node {
+  name: "Grp_Panel"
+  attr {
+    key: "height"
+    value {
+      f: 2000.0
+    }
+  }
+  attr {
+    key: "type"
+    value {
+      placeholder: "macro"
+    }
+  }
+  attr {
+    key: "width"
+    value {
+      f: 800.0
+    }
+  }
+  attr {
+    key: "x"
+    value {
+      f: 1000.0
+    }
+  }
+  attr {
+    key: "y"
+    value {
+      f: 2000.0
+    }
+  }
+}
+
+# Panel input pin - power from entry
+node {
+  name: "Grp_Panel/Pinput_power"
+  attr {
+    key: "macro_name"
+    value {
+      placeholder: "Grp_Panel"
+    }
+  }
+  attr {
+    key: "type"
+    value {
+      placeholder: "macro_pin"
+    }
+  }
+  attr {
+    key: "x"
+    value {
+      f: 1000.0
+    }
+  }
+  attr {
+    key: "x_offset"
+    value {
+      f: -400.0
+    }
+  }
+  attr {
+    key: "y"
+    value {
+      f: 2000.0
+    }
+  }
+  attr {
+    key: "y_offset"
+    value {
+      f: 0.0
+    }
+  }
+}
+
+# Panel output pins - power to equipment
+node {
+  name: "Grp_Panel/Poutput_1"
+  input: "Grp_VFD/Pinput_power"
+  attr {
+    key: "macro_name"
+    value {
+      placeholder: "Grp_Panel"
+    }
+  }
+  attr {
+    key: "type"
+    value {
+      placeholder: "macro_pin"
+    }
+  }
+  attr {
+    key: "x"
+    value {
+      f: 1000.0
+    }
+  }
+  attr {
+    key: "x_offset"
+    value {
+      f: 400.0
+    }
+  }
+  attr {
+    key: "y"
+    value {
+      f: 2000.0
+    }
+  }
+  attr {
+    key: "y_offset"
+    value {
+      f: 500.0
+    }
+  }
+}
+
+node {
+  name: "Grp_Panel/Poutput_2"
+  input: "Grp_AHU/Pinput_power"
+  attr {
+    key: "macro_name"
+    value {
+      placeholder: "Grp_Panel"
+    }
+  }
+  attr {
+    key: "type"
+    value {
+      placeholder: "macro_pin"
+    }
+  }
+  attr {
+    key: "x"
+    value {
+      f: 1000.0
+    }
+  }
+  attr {
+    key: "x_offset"
+    value {
+      f: 400.0
+    }
+  }
+  attr {
+    key: "y"
+    value {
+      f: 2000.0
+    }
+  }
+  attr {
+    key: "y_offset"
+    value {
+      f: -500.0
+    }
+  }
+}
+
+node {
+  name: "Grp_Panel/Poutput_3"
+  input: "Grp_ExhaustFan/Pinput_power"
+  attr {
+    key: "macro_name"
+    value {
+      placeholder: "Grp_Panel"
+    }
+  }
+  attr {
+    key: "type"
+    value {
+      placeholder: "macro_pin"
+    }
+  }
+  attr {
+    key: "x"
+    value {
+      f: 1000.0
+    }
+  }
+  attr {
+    key: "x_offset"
+    value {
+      f: 400.0
+    }
+  }
+  attr {
+    key: "y"
+    value {
+      f: 2000.0
+    }
+  }
+  attr {
+    key: "y_offset"
+    value {
+      f: 0.0
+    }
+  }
+}
+
+# VFD (Variable Frequency Drive) - 0.3m x 0.5m = 300mm x 500mm
+node {
+  name: "Grp_VFD"
+  attr {
+    key: "height"
+    value {
+      f: 500.0
+    }
+  }
+  attr {
+    key: "type"
+    value {
+      placeholder: "macro"
+    }
+  }
+  attr {
+    key: "width"
+    value {
+      f: 300.0
+    }
+  }
+  attr {
+    key: "x"
+    value {
+      f: 1500.0
+    }
+  }
+  attr {
+    key: "y"
+    value {
+      f: 3500.0
+    }
+  }
+}
+
+# VFD input pin - power from panel
+node {
+  name: "Grp_VFD/Pinput_power"
+  attr {
+    key: "macro_name"
+    value {
+      placeholder: "Grp_VFD"
+    }
+  }
+  attr {
+    key: "type"
+    value {
+      placeholder: "macro_pin"
+    }
+  }
+  attr {
+    key: "x"
+    value {
+      f: 1500.0
+    }
+  }
+  attr {
+    key: "x_offset"
+    value {
+      f: 0.0
+    }
+  }
+  attr {
+    key: "y"
+    value {
+      f: 3500.0
+    }
+  }
+  attr {
+    key: "y_offset"
+    value {
+      f: -250.0
+    }
+  }
+}
+
+# VFD output pin - power to pump
+node {
+  name: "Grp_VFD/Poutput_power"
+  input: "Grp_Pump/Pinput_power"
+  attr {
+    key: "macro_name"
+    value {
+      placeholder: "Grp_VFD"
+    }
+  }
+  attr {
+    key: "type"
+    value {
+      placeholder: "macro_pin"
+    }
+  }
+  attr {
+    key: "x"
+    value {
+      f: 1500.0
+    }
+  }
+  attr {
+    key: "x_offset"
+    value {
+      f: 0.0
+    }
+  }
+  attr {
+    key: "y"
+    value {
+      f: 3500.0
+    }
+  }
+  attr {
+    key: "y_offset"
+    value {
+      f: 250.0
+    }
+  }
+}
+
+# Exhaust Fan - 0.6m x 0.6m = 600mm x 600mm
+node {
+  name: "Grp_ExhaustFan"
+  attr {
+    key: "height"
+    value {
+      f: 600.0
+    }
+  }
+  attr {
+    key: "type"
+    value {
+      placeholder: "macro"
+    }
+  }
+  attr {
+    key: "width"
+    value {
+      f: 600.0
+    }
+  }
+  attr {
+    key: "x"
+    value {
+      f: 3000.0
+    }
+  }
+  attr {
+    key: "y"
+    value {
+      f: 7000.0
+    }
+  }
+}
+
+# Exhaust Fan input pin - power
+node {
+  name: "Grp_ExhaustFan/Pinput_power"
+  attr {
+    key: "macro_name"
+    value {
+      placeholder: "Grp_ExhaustFan"
+    }
+  }
+  attr {
+    key: "type"
+    value {
+      placeholder: "macro_pin"
+    }
+  }
+  attr {
+    key: "x"
+    value {
+      f: 3000.0
+    }
+  }
+  attr {
+    key: "x_offset"
+    value {
+      f: 0.0
+    }
+  }
+  attr {
+    key: "y"
+    value {
+      f: 7000.0
+    }
+  }
+  attr {
+    key: "y_offset"
+    value {
+      f: -300.0
+    }
+  }
+}
+
+# Exhaust Fan output pin - to exhaust duct
+node {
+  name: "Grp_ExhaustFan/Poutput_exhaust"
+  input: "exhaust_duct"
+  attr {
+    key: "macro_name"
+    value {
+      placeholder: "Grp_ExhaustFan"
+    }
+  }
+  attr {
+    key: "type"
+    value {
+      placeholder: "macro_pin"
+    }
+  }
+  attr {
+    key: "x"
+    value {
+      f: 3000.0
+    }
+  }
+  attr {
+    key: "x_offset"
+    value {
+      f: 0.0
+    }
+  }
+  attr {
+    key: "y"
+    value {
+      f: 7000.0
+    }
+  }
+  attr {
+    key: "y_offset"
+    value {
+      f: 300.0
+    }
+  }
+}
