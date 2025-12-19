@@ -154,6 +154,7 @@ dependencies = [
     { name = "tensorflow-probability" },
     { name = "tf-agents" },
     { name = "tf-keras" },
+    { name = "timeout-decorator" },
 ]
 
 [package.optional-dependencies]
@@ -261,6 +262,7 @@ requires-dist = [
     { name = "tensorflow-probability", specifier = ">=0.23.0,<0.24.0" },
     { name = "tf-agents", specifier = ">=0.19.0" },
     { name = "tf-keras", specifier = ">=2.15.0,<2.16.0" },
+    { name = "timeout-decorator", specifier = ">=0.5.0" },
     { name = "torch", marker = "extra == 'all'" },
     { name = "torch", marker = "extra == 'dreamplace'" },
 ]
@@ -1683,6 +1685,12 @@ sdist = { url = "https://files.pythonhosted.org/packages/03/a3/72e49c210fe545159
 wheels = [
     { url = "https://files.pythonhosted.org/packages/6f/23/6fd9aab5b7ef9e5614b94edce48d92db9d38d2bd2d00ef2c7a6f82a00588/tf_keras-2.15.1-py3-none-any.whl", hash = "sha256:8beaef46b8b4f1158de1410e7c0cf82f008b9e8c4ab3443f54ac1aaef9c2ad74", size = 1715031, upload-time = "2024-03-08T18:37:47.562Z" },
 ]
+
+[[package]]
+name = "timeout-decorator"
+version = "0.5.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/80/f8/0802dd14c58b5d3d72bb9caa4315535f58787a1dc50b81bbbcaaa15451be/timeout-decorator-0.5.0.tar.gz", hash = "sha256:6a2f2f58db1c5b24a2cc79de6345760377ad8bdc13813f5265f6c3e63d16b3d7", size = 4754, upload-time = "2020-11-15T00:53:06.506Z" }
 
 [[package]]
 name = "tomli"
