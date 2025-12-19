@@ -80,27 +80,11 @@ jobs:
       - name: Install dependencies
         run: uv sync --frozen --group test
 
-      - name: Install DREAMPlace dependencies
-        run: uv pip install torch shapely scipy matplotlib cairocffi
-
       - name: Download plc_wrapper_main binary
         run: |
           sudo curl -L https://storage.googleapis.com/rl-infra-public/circuit-training/placement_cost/plc_wrapper_main_0.0.4 \
             -o /usr/local/bin/plc_wrapper_main
           sudo chmod +x /usr/local/bin/plc_wrapper_main
-
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libcairo2-dev libboost-all-dev flex
-
-      - name: Download and setup DREAMPlace
-        run: |
-          mkdir -p /tmp/dreamplace
-          curl -L https://storage.googleapis.com/rl-infra-public/circuit-training/dreamplace/dreamplace_python3.11.tar.gz \
-            -o /tmp/dreamplace/dreamplace.tar.gz
-          tar xzf /tmp/dreamplace/dreamplace.tar.gz -C /tmp/dreamplace/
-          echo "PYTHONPATH=/tmp/dreamplace:/tmp/dreamplace/dreamplace:$PYTHONPATH" >> $GITHUB_ENV
 
       - name: Run tests
         run: uv run pytest circuit_training/ -v
@@ -124,7 +108,9 @@ jobs:
         run: uv sync --frozen --group test
 
       - name: Install DREAMPlace dependencies
-        run: uv pip install torch shapely scipy matplotlib cairocffi
+        run: |
+          uv pip install torch shapely scipy matplotlib cairocffi
+          uv pip install 'typing_extensions>=4.10.0'
 
       - name: Download plc_wrapper_main binary
         run: |

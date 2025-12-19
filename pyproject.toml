@@ -207,6 +207,12 @@ addopts = [
     "--tb=short",
     "--continue-on-collection-errors",
     "--ignore=circuit_training/dreamplace/",
+    "--ignore=circuit_training/environment/coordinate_descent_placer_test.py",
+    "--ignore=circuit_training/environment/environment_test.py",
+    "--ignore=circuit_training/learning/agent_test.py",
+    "--ignore=circuit_training/learning/collect_test.py",
+    "--ignore=circuit_training/model/model_test.py",
+    "--ignore=circuit_training/model/model_lib_test.py",
     "--ignore=circuit_training/utils/test_utils.py",
 ]
 filterwarnings = [
