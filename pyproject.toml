@@ -1,0 +1,204 @@
+[build-system]
+requires = ["hatchling>=1.21.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "circuit-training"
+dynamic = ["version"]
+description = "Circuit Training: Reinforcement Learning for Chip Placement"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.11"
+authors = [
+    { name = "Google Research", email = "circuit-training@google.com" }
+]
+keywords = [
+    "reinforcement-learning",
+    "chip-design",
+    "placement",
+    "deep-learning",
+    "machine-learning",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
+]
+dependencies = [
+    "numpy>=1.26.0,<3.0.0",
+    "tensorflow>=2.15.0",
+    "tf-agents[reverb]>=0.19.0",
+    "tf-keras>=2.15.0",
+    "gin-config>=0.5.0",
+    "sortedcontainers>=2.4.0",
+    "absl-py>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "pytest-xdist>=3.5.0",
+    "pytest-timeout>=2.2.0",
+    "ruff>=0.8.0",
+    "pyrefly>=0.15.0",
+    "pre-commit>=3.6.0",
+    "pyyaml>=6.0.0",
+]
+dreamplace = [
+    "torch>=2.1.0",
+    "shapely>=2.0.0",
+    "scipy>=1.11.0",
+    "matplotlib>=3.8.0",
+    "cairocffi>=1.6.0",
+]
+docs = [
+    "mkdocs-material>=9.5.0",
+    "mkdocstrings[python]>=0.24.0",
+    "mkdocs-gen-files>=0.5.0",
+]
+all = [
+    "circuit-training[dev,dreamplace,docs]",
+]
+
+[project.scripts]
+ct-train = "circuit_training.learning.train_ppo:main"
+ct-collect = "circuit_training.learning.ppo_collect:main"
+ct-eval = "circuit_training.learning.eval:main"
+ct-server = "circuit_training.learning.ppo_reverb_server:main"
+
+[project.urls]
+Homepage = "https://github.com/google-research/circuit_training"
+Documentation = "https://github.com/google-research/circuit_training#readme"
+Repository = "https://github.com/google-research/circuit_training"
+Issues = "https://github.com/google-research/circuit_training/issues"
+
+[tool.hatch.version]
+path = "circuit_training/version.py"
+pattern = "__version__ = ['\"](?P<version>[^'\"]+)['\"]"
+
+[tool.hatch.build.targets.wheel]
+packages = ["circuit_training"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/circuit_training",
+    "/tests",
+    "/README.md",
+    "/LICENSE",
+]
+exclude = [
+    "*.pyc",
+    "__pycache__",
+    ".git",
+]
+
+# === PYTEST CONFIGURATION ===
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "circuit_training"]
+python_files = ["*_test.py", "test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--continue-on-collection-errors",
+    "--ignore=circuit_training/model/model_lib_test.py",
+    "--ignore=circuit_training/environment/plc_client_test.py",
+    "--ignore=circuit_training/model/model_test.py",
+    "--ignore=circuit_training/dreamplace/",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
+
+# === RUFF CONFIGURATION ===
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+fix = true
+src = ["circuit_training", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+    "ARG",    # flake8-unused-arguments
+    "SIM",    # flake8-simplify
+    "TCH",    # flake8-type-checking
+    "PTH",    # flake8-use-pathlib
+    "RUF",    # Ruff-specific rules
+    "NPY",    # NumPy-specific rules
+    "PERF",   # Performance
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "E741",   # ambiguous variable name
+    "B008",   # function call in default argument
+    "B905",   # zip without strict
+    "UP007",  # Use X | Y for type union (not always compatible)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "ARG001",  # Unused function argument (fixtures)
+    "S101",    # Use of assert
+]
+"**/*_test.py" = [
+    "ARG001",
+    "S101",
+]
+"circuit_training/grouping/*" = [
+    "ALL",     # Legacy code, ignore all for now
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["circuit_training"]
+force-single-line = false
+lines-after-imports = 2
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = 80
+
+# === PYREFLY CONFIGURATION ===
+
+[tool.pyrefly]
+python_version = "3.11"
+project_includes = ["circuit_training"]
+strict = false  # Start lenient, tighten over time
+
+# === COVERAGE CONFIGURATION ===
+
+[tool.coverage.run]
+source = ["circuit_training"]
+omit = [
+    "*/tests/*",
+    "*_test.py",
+    "circuit_training/grouping/testdata/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
