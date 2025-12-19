@@ -1,0 +1,19 @@
+[tool.pyrefly]
+project_includes = ["circuit_training"]
+project_excludes = ["circuit_training/grouping/testdata"]
+search_path = ["."]
+
+python_version = "3.11"
+
+# Start with lenient settings, tighten over time
+errors = [
+    "missing-return-type",
+    "incompatible-return-type",
+    "incompatible-argument-type",
+    "undefined-name",
+]
+
+# Ignore legacy code initially
+ignore_paths = [
+    "circuit_training/grouping/*",
+]
