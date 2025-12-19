@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PYTHON_VERSION: "3.12"
+  PYTHON_VERSION: "3.11"
 
 jobs:
   lint:
@@ -65,7 +65,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.12"]
+        python-version: ["3.11"]
     steps:
       - uses: actions/checkout@v5
 
@@ -78,9 +78,7 @@ jobs:
         run: uv python install ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: |
-          uv sync --frozen --group test
-          uv pip install tf-agents pillow gym --no-deps
+        run: uv sync --frozen --group test
 
       - name: Download plc_wrapper_main binary
         run: |
@@ -107,10 +105,10 @@ jobs:
         run: uv python install ${{ env.PYTHON_VERSION }}
 
       - name: Install dependencies
-        run: |
-          uv sync --frozen --group test
-          uv pip install tf-agents pillow gym --no-deps
-          uv pip install torch timeout-decorator shapely scipy matplotlib cairocffi
+        run: uv sync --frozen --group test
+
+      - name: Install DREAMPlace dependencies
+        run: uv pip install torch timeout-decorator shapely scipy matplotlib cairocffi
 
       - name: Download plc_wrapper_main binary
         run: |
@@ -172,9 +170,7 @@ jobs:
         run: uv python install ${{ env.PYTHON_VERSION }}
 
       - name: Install dependencies
-        run: |
-          uv sync --frozen --dev
-          uv pip install tf-agents pillow gym --no-deps
+        run: uv sync --frozen --dev
 
       - name: Run integration tests
         run: uv run pytest tests/integration/ -v --timeout=300
