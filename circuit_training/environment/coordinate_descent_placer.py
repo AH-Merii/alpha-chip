@@ -239,6 +239,7 @@ class CoordinateDescentPlacer:
 
     def place_node(self, node: int) -> None:
         """Given a node, greedily place the node on the best location wrt cost."""
+        orientations = None
         if not self.plc.is_node_soft_macro(node):
             orientations = self._node_to_ori[node]
 

@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository == 'google-research/circuit_training'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -37,7 +37,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Install semantic-release
         run: |
@@ -50,9 +50,7 @@ jobs:
             conventional-changelog-conventionalcommits
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v4
-        with:
-          version: "latest"
+        uses: astral-sh/setup-uv@v7
 
       - name: Set up Python
         run: uv python install ${{ env.PYTHON_VERSION }}
@@ -71,14 +69,12 @@ jobs:
       name: pypi
       url: https://pypi.org/project/circuit-training/
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v4
-        with:
-          version: "latest"
+        uses: astral-sh/setup-uv@v7
 
       - name: Set up Python
         run: uv python install ${{ env.PYTHON_VERSION }}

@@ -1,19 +1,15 @@
-[tool.pyrefly]
 project_includes = ["circuit_training"]
-project_excludes = ["circuit_training/grouping/testdata"]
+project_excludes = [
+    "circuit_training/grouping/testdata",
+    "circuit_training/dreamplace",
+]
 search_path = ["."]
 
 python_version = "3.11"
 
-# Start with lenient settings, tighten over time
-errors = [
-    "missing-return-type",
-    "incompatible-return-type",
-    "incompatible-argument-type",
-    "undefined-name",
-]
-
-# Ignore legacy code initially
+# Ignore legacy code
 ignore_paths = [
+    "circuit_training/dreamplace/*",
     "circuit_training/grouping/*",
+    "circuit_training/environment/coordinate_descent_placer*.py",  # DREAMPlace dependent
 ]

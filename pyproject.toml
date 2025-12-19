@@ -67,6 +67,34 @@ all = [
     "circuit-training[dev,dreamplace,docs]",
 ]
 
+# === UV DEPENDENCY GROUPS (PEP 735) ===
+
+[dependency-groups]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "pytest-xdist>=3.0",
+    "pytest-timeout>=2.0",
+    "ruff>=0.1.0",
+    "pre-commit>=3.0",
+    "pyyaml>=6.0",
+]
+lint = [
+    "ruff>=0.1.0",
+]
+test = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "pytest-xdist>=3.0",
+    "pytest-timeout>=2.0",
+    "pyyaml>=6.0",
+]
+docs = [
+    "mkdocs-material>=9.0",
+    "mkdocstrings[python]>=0.24",
+    "mkdocs-gen-files>=0.5",
+]
+
 [project.scripts]
 ct-train = "circuit_training.learning.train_ppo:main"
 ct-collect = "circuit_training.learning.ppo_collect:main"

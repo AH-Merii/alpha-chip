@@ -296,6 +296,32 @@ dreamplace = [
     { name = "torch" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "pre-commit" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "pytest-timeout" },
+    { name = "pytest-xdist" },
+    { name = "pyyaml" },
+    { name = "ruff" },
+]
+docs = [
+    { name = "mkdocs-gen-files" },
+    { name = "mkdocs-material" },
+    { name = "mkdocstrings", extra = ["python"] },
+]
+lint = [
+    { name = "ruff" },
+]
+test = [
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "pytest-timeout" },
+    { name = "pytest-xdist" },
+    { name = "pyyaml" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "absl-py", specifier = ">=2.0.0" },
@@ -337,6 +363,30 @@ requires-dist = [
     { name = "torch", marker = "extra == 'dreamplace'" },
 ]
 provides-extras = ["all", "dev", "docs", "dreamplace"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pre-commit", specifier = ">=3.0" },
+    { name = "pytest", specifier = ">=7.0" },
+    { name = "pytest-cov", specifier = ">=4.0" },
+    { name = "pytest-timeout", specifier = ">=2.0" },
+    { name = "pytest-xdist", specifier = ">=3.0" },
+    { name = "pyyaml", specifier = ">=6.0" },
+    { name = "ruff", specifier = ">=0.1.0" },
+]
+docs = [
+    { name = "mkdocs-gen-files", specifier = ">=0.5" },
+    { name = "mkdocs-material", specifier = ">=9.0" },
+    { name = "mkdocstrings", extras = ["python"], specifier = ">=0.24" },
+]
+lint = [{ name = "ruff", specifier = ">=0.1.0" }]
+test = [
+    { name = "pytest", specifier = ">=7.0" },
+    { name = "pytest-cov", specifier = ">=4.0" },
+    { name = "pytest-timeout", specifier = ">=2.0" },
+    { name = "pytest-xdist", specifier = ">=3.0" },
+    { name = "pyyaml", specifier = ">=6.0" },
+]
 
 [[package]]
 name = "click"
