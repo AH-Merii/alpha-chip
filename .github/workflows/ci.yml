@@ -69,15 +69,18 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Set up Pixi
-        uses: prefix-dev/setup-pixi@v0.8.8
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
         with:
-          pixi-version: v0.47.0
-          cache: true
-          environments: dev
+          enable-cache: true
 
-      - name: Install tf-agents (with relaxed deps)
-        run: pixi run pip install tf-agents --no-deps
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          uv sync --frozen --group test
+          uv pip install tf-agents pillow gym --no-deps
 
       - name: Download plc_wrapper_main binary
         run: |
@@ -86,30 +89,39 @@ jobs:
           sudo chmod +x /usr/local/bin/plc_wrapper_main
 
       - name: Run tests
-        run: pixi run -e dev pytest circuit_training/ -v
+        run: uv run pytest circuit_training/ -v
 
   test-dreamplace:
     name: Test DREAMPlace Integration
     runs-on: ubuntu-latest
-    continue-on-error: true  # DREAMPlace tests may fail without full setup
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v5
 
-      - name: Set up Pixi
-        uses: prefix-dev/setup-pixi@v0.8.8
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
         with:
-          pixi-version: v0.47.0
-          cache: true
-          environments: dev
+          enable-cache: true
 
-      - name: Install tf-agents (with relaxed deps)
-        run: pixi run pip install tf-agents --no-deps
+      - name: Set up Python
+        run: uv python install ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          uv sync --frozen --group test
+          uv pip install tf-agents pillow gym --no-deps
+          uv pip install torch timeout-decorator shapely scipy matplotlib cairocffi
 
       - name: Download plc_wrapper_main binary
         run: |
           sudo curl -L https://storage.googleapis.com/rl-infra-public/circuit-training/placement_cost/plc_wrapper_main_0.0.4 \
             -o /usr/local/bin/plc_wrapper_main
           sudo chmod +x /usr/local/bin/plc_wrapper_main
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcairo2-dev libboost-all-dev flex
 
       - name: Download and setup DREAMPlace
         run: |
@@ -121,7 +133,7 @@ jobs:
 
       - name: Run DREAMPlace tests
         run: |
-          pixi run -e dev pytest circuit_training/dreamplace/ -v --timeout=120 || echo "DREAMPlace tests completed with errors"
+          uv run pytest circuit_training/dreamplace/ -v --timeout=120 || echo "DREAMPlace tests completed with errors"
 
   build:
     name: Build Package
@@ -153,13 +165,17 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Set up Pixi
-        uses: prefix-dev/setup-pixi@v0.8.8
-        with:
-          pixi-version: v0.47.0
-          cache: true
-          environments: dev
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python
+        run: uv python install ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          uv sync --frozen --dev
+          uv pip install tf-agents pillow gym --no-deps
 
       - name: Run integration tests
-        run: pixi run -e dev pytest tests/integration/ -v --timeout=300
+        run: uv run pytest tests/integration/ -v --timeout=300
         continue-on-error: true
