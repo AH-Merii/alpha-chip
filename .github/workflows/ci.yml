@@ -83,7 +83,7 @@ jobs:
       - name: Install DREAMPlace dependencies
         run: |
           uv pip install torch shapely scipy matplotlib cairocffi
-          uv pip install --force-reinstall 'typing_extensions>=4.10.0'
+          uv run pip install --force-reinstall 'typing_extensions>=4.10.0'
 
       - name: Download plc_wrapper_main binary
         run: |
@@ -128,7 +128,7 @@ jobs:
       - name: Install DREAMPlace dependencies
         run: |
           uv pip install torch shapely scipy matplotlib cairocffi
-          uv pip install --force-reinstall 'typing_extensions>=4.10.0'
+          uv run pip install --force-reinstall 'typing_extensions>=4.10.0'
 
       - name: Download plc_wrapper_main binary
         run: |
