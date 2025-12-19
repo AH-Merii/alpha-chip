@@ -1,0 +1,15 @@
+project_includes = ["circuit_training"]
+project_excludes = [
+    "circuit_training/grouping/testdata",
+    "circuit_training/dreamplace",
+]
+search_path = ["."]
+
+python_version = "3.11"
+
+# Ignore legacy code
+ignore_paths = [
+    "circuit_training/dreamplace/*",
+    "circuit_training/grouping/*",
+    "circuit_training/environment/coordinate_descent_placer*.py",  # DREAMPlace dependent
+]

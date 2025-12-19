@@ -81,194 +81,82 @@ scaling to 100s of actors.
 
 > :warning: AlphaChip only supports Linux based OSes.
 
-> :warning: AlphaChip requires Python 3.9 or greater.
+> :warning: AlphaChip requires Python 3.11 or greater.
 
-## Stable
+### Quick Install with uv (Recommended)
 
-AlphaChip is a research project. We are not currently creating PyPi
-builds. Stable in this instance is relative to HEAD and means that the code
-was tested at this point in time and branched. With upstream libraires
-constantly changing; older branches may end up rotting faster than expected.
-
-The steps below install the most recent branch and the archive is in the
-[releases section](#releases). There are two methods for installing; but before
-doing either one you need to run the preliminary setup](#preliminary-setup).
-
-*  [Use the docker](#using-the-docker) (**Highly Recommended**)
-*  [Install locally](#install-locally)
-
-
-### Preliminary Setup
-
-Before following the instructions set the following variables and clone the
-repo:
+The fastest way to get started is using [uv](https://docs.astral.sh/uv/), the modern Python package manager:
 
 ```shell
-$ export CT_VERSION=0.0.4
-# Currently supports python3.9, python3.10, and python3.11
-# The docker is python3.9 only.
-$ export PYTHON_VERSION=python3.9
-$ export DREAMPLACE_PATTERN=dreamplace_20231214_c5a83e5_${PYTHON_VERSION}.tar.gz
-# If the verson of TF-Agents in the table is not current, change this command to
-# match the version tf-agenst that matches the branch of AlphaChip used.
-$ export TF_AGENTS_PIP_VERSION=tf-agents[reverb]
+# Install uv if you don't have it
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Clone the Repo and checkout the desired branch.
-$  git clone https://github.com/google-research/circuit_training.git
-$  git -C $(pwd)/circuit_training checkout r${CT_VERSION}
+# Clone the repository
+git clone https://github.com/google-research/circuit_training.git
+cd circuit_training
+
+# Create virtual environment and install dependencies
+uv sync
+
+# Install the placement cost binary
+sudo curl -L https://storage.googleapis.com/rl-infra-public/circuit-training/placement_cost/plc_wrapper_main_0.0.4 \
+    -o /usr/local/bin/plc_wrapper_main
+sudo chmod +x /usr/local/bin/plc_wrapper_main
+
+# Verify installation
+uv run python -c "import circuit_training; print(circuit_training.__version__)"
 ```
 
-### Using the docker
-
-Do not forget to do the [prelimary setup](#preliminary-setup). The cleanest way
-to use AlphaChip is to use the docker, these commands will create a
-docker with all the dependencies needed:
+### Install with pip
 
 ```shell
-$ export REPO_ROOT=$(pwd)/circuit_training
+# Clone the repository
+git clone https://github.com/google-research/circuit_training.git
+cd circuit_training
 
-# Build the docker image.
-$ docker build --pull --no-cache --tag circuit_training:core \
-    --build-arg tf_agents_version="${TF_AGENTS_PIP_VERSION}" \
-    --build-arg dreamplace_version="${DREAMPLACE_PATTERN}" \
-    --build-arg placement_cost_binary="plc_wrapper_main_${CT_VERSION}" \
+# Create virtual environment
+python -m venv .venv
+source .venv/bin/activate
+
+# Install the package
+pip install -e .
+
+# Install the placement cost binary
+sudo curl -L https://storage.googleapis.com/rl-infra-public/circuit-training/placement_cost/plc_wrapper_main_0.0.4 \
+    -o /usr/local/bin/plc_wrapper_main
+sudo chmod +x /usr/local/bin/plc_wrapper_main
+```
+
+### Development Installation
+
+For development with linting and testing tools:
+
+```shell
+# With uv (recommended)
+uv sync --dev
+
+# Or with pip
+pip install -e ".[dev]"
+```
+
+### Docker Installation
+
+For a fully isolated environment with all dependencies including DREAMPlace:
+
+```shell
+export REPO_ROOT=$(pwd)/circuit_training
+
+# Build the docker image
+docker build --pull --no-cache --tag circuit_training:core \
+    --build-arg tf_agents_version="tf-agents[reverb]" \
+    --build-arg dreamplace_version="dreamplace_20231214_c5a83e5_python3.9.tar.gz" \
+    --build-arg placement_cost_binary="plc_wrapper_main_0.0.4" \
     -f "${REPO_ROOT}"/tools/docker/ubuntu_circuit_training ${REPO_ROOT}/tools/docker/
 
-# Run the end2end smoke test using the image. Takes 10-20 minutes.
-$ mkdir -p ${REPO_ROOT}/logs
-$ docker run --rm -v ${REPO_ROOT}:/workspace --workdir /workspace circuit_training:core \
+# Run the end2end smoke test (takes 10-20 minutes)
+mkdir -p ${REPO_ROOT}/logs
+docker run --rm -v ${REPO_ROOT}:/workspace --workdir /workspace circuit_training:core \
     bash tools/e2e_smoke_test.sh --root_dir /workspace/logs
-```
-
-### Install locally
-
-Do not forget to do the [prelimary setup](#preliminary-setup).
-
-AlphaChip installation steps:
-
-*   Install our DREAMPlace binary.
-*   Install TF-Agents and The Placement Cost Binary
-*   Run a test
-
-
-#### Install DREAMPlace
-
-Follow the [instructions](#install-dreamplace) for DREAMPlace but do not change
-the ENV VARS that you already exported previously.
-
-
-#### Install TF-Agents and the Placement Cost binary
-
-These commands install TF-Agents and the placement cost binary.
-
-```shell
-# Installs TF-Agents with stable versions of Reverb and TensorFlow 2.x.
-$  pip install $TF_AGENTS_PIP_VERSION
-$  pip install tf-keras
-# Using keras-2
-$ export TF_USE_LEGACY_KERAS=1
-# Copies the placement cost binary to /usr/local/bin and makes it executable.
-$  sudo curl https://storage.googleapis.com/rl-infra-public/circuit-training/placement_cost/plc_wrapper_main_${CT_VERSION} \
-     -o  /usr/local/bin/plc_wrapper_main
-$  sudo chmod 555 /usr/local/bin/plc_wrapper_main
-```
-
-#### Run a test.
-
-These commands run a basic unit test; if the current stable tf-agents is not the
-version you installed, then edit the tox.ini file and change `tf-agents[reverb]`
-to `tf-agents[reverb]~=<version you want>`
-
-```shell
-tox -e py39-stable -- circuit_training/grouping/grouping_test.py
-```
-
-
-## HEAD
-
-We recommand using [stable](#stable) branches; but our team does work from the
-`HEAD`. The main issue is `HEAD` breaks when upstream libraries are broken and
-our `HEAD` utilizes other nightly created libraries adding to the variablity.
-
-The steps below install the most recent branch and the archive is in the
-[releases section](#releases). There are two methods for installing; but before
-doing either one you need to run the [preliminary setup](#preliminary-setup-2).
-
-*  [Use the docker](#using-the-docker-2) (**Highly Recommended**)
-*  [Install locally](#install-locally-2)
-
-
-### Preliminary Setup
-
-Before following the instructions set the following variables and clone the
-repo:
-
-```shell
-# Currently supports python3.9, python3.10, and python3.11
-# The docker is python3.9 only.
-$ export PYTHON_VERSION=python3.9
-$ export DREAMPLACE_PATTERN=dreamplace_${PYTHON_VERSION}.tar.gz
-
-# Clone the Repo and checkout the desired branch.
-$  git clone https://github.com/google-research/circuit_training.git
-```
-
-### Using the docker
-
-Do not forget to do the [preliminary setup](#preliminary-setup). The cleanest way
-to use AlphaChip is to use docker, these commands will create an image
-with all the dependencies needed:
-
-```shell
-$ export REPO_ROOT=$(pwd)/circuit_training
-
-# Builds the image with current DREAMPlace and Placement Cost Binary.
-$ docker build --pull --no-cache --tag circuit_training:core \
-    --build-arg tf_agents_version="tf-agents-nightly[reverb]" \
-    -f "${REPO_ROOT}"/tools/docker/ubuntu_circuit_training ${REPO_ROOT}/tools/docker/
-
-# Run the end2end smoke test using the image. Takes 10-20 minutes.
-$ mkdir -p ${REPO_ROOT}/logs
-$ docker run --rm -v ${REPO_ROOT}:/workspace --workdir /workspace circuit_training:core \
-    bash tools/e2e_smoke_test.sh --root_dir /workspace/logs
-```
-
-### Install locally
-
-AlphaChip installation steps:
-
-*   Install our DREAMPlace binary.
-*   Install TF-Agents Nightly and the placement cost binary
-*   Run a test
-
-#### Install DREAMPlace
-
-Follow the [instructions](#install-dreamplace) for DREAMPlace but do not change
-the ENV VARS that you already exported previously.
-
-
-#### Install TF-Agents and the Placement Cost binary
-
-These commands install TF-Agents and the placement cost binary.
-
-```shell
-# Installs TF-Agents with stable versions of Reverb and TensorFlow 2.x.
-$  pip install tf-agents-nightly[reverb]
-$  pip install tf-keras
-# Using keras-2
-$ export TF_USE_LEGACY_KERAS=1
-# Copies the placement cost binary to /usr/local/bin and makes it executable.
-$  sudo curl https://storage.googleapis.com/rl-infra-public/circuit-training/placement_cost/plc_wrapper_main \
-     -o  /usr/local/bin/plc_wrapper_main
-$  sudo chmod 555 /usr/local/bin/plc_wrapper_main
-```
-
-#### Run a test.
-
-These commands run a basic unit test.
-
-```shell
-tox -e py39-nightly -- circuit_training/grouping/grouping_test.py
 ```
 
 ## Install DREAMPlace
@@ -338,21 +226,30 @@ on multiple netlists see [Pre-Training Instruction](./docs/PRETRAINING.md).
 ## Testing
 
 ```shell
-# Runs tests with nightly TF-Agents.
-$  tox -e py39-nightly,py310-nightly,py311-nightly
-# Runs with latest stable TF-Agents.
-$  tox -e py39-stable,py310-stable,py311-stable
+# Run all tests with uv
+uv run pytest
 
-# Using our Docker for CI.
-## Build the docker
-$  docker build --tag circuit_training:ci -f tools/docker/ubuntu_ci tools/docker/
-## Runs tests with nightly TF-Agents.
-$  docker run -it --rm -v $(pwd):/workspace --workdir /workspace circuit_training:ci \
-     tox -e py39-nightly,py310-nightly,py311-nightly
-## Runs tests with latest stable TF-Agents.
-$  docker run -it --rm -v $(pwd):/workspace --workdir /workspace circuit_training:ci \
-     tox -e py39-stable,py310-stable,py311-stable
+# Run tests with coverage
+uv run pytest --cov=circuit_training --cov-report=term-missing
 
+# Run only fast tests (excluding slow/integration)
+uv run pytest -m "not slow"
+
+# Run specific test file
+uv run pytest circuit_training/grouping/grouping_test.py -v
+```
+
+### Linting and Formatting
+
+```shell
+# Run Ruff linter
+uv run ruff check circuit_training/
+
+# Run Ruff formatter
+uv run ruff format circuit_training/
+
+# Run pre-commit hooks
+uv run pre-commit run --all-files
 ```
 
 <a id='Releases'></a>

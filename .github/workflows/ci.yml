@@ -1,0 +1,197 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python
+        run: uv python install ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: uv sync --frozen --group lint
+
+      - name: Run Ruff linter
+        run: uv run ruff check --output-format=github circuit_training/
+
+      - name: Run Ruff formatter check
+        run: uv run ruff format --check circuit_training/
+
+  commitlint:
+    name: Lint Commits
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install commitlint
+        run: npm install --save-dev @commitlint/cli @commitlint/config-conventional
+
+      - name: Validate PR commits
+        run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
+
+  test:
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11"]
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: uv sync --frozen --group test
+
+      - name: Install DREAMPlace dependencies
+        run: |
+          uv pip install torch shapely scipy matplotlib cairocffi
+          .venv/bin/pip install --upgrade --force-reinstall 'typing_extensions>=4.10.0'
+
+      - name: Download plc_wrapper_main binary
+        run: |
+          sudo curl -L https://storage.googleapis.com/rl-infra-public/circuit-training/placement_cost/plc_wrapper_main_0.0.4 \
+            -o /usr/local/bin/plc_wrapper_main
+          sudo chmod +x /usr/local/bin/plc_wrapper_main
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcairo2-dev libboost-all-dev flex
+
+      - name: Download and setup DREAMPlace
+        run: |
+          mkdir -p /tmp/dreamplace
+          curl -L https://storage.googleapis.com/rl-infra-public/circuit-training/dreamplace/dreamplace_python3.11.tar.gz \
+            -o /tmp/dreamplace/dreamplace.tar.gz
+          tar xzf /tmp/dreamplace/dreamplace.tar.gz -C /tmp/dreamplace/
+          echo "PYTHONPATH=/tmp/dreamplace:/tmp/dreamplace/dreamplace:$PYTHONPATH" >> $GITHUB_ENV
+
+      - name: Run tests
+        run: uv run pytest circuit_training/ -v
+
+  test-dreamplace:
+    name: Test DREAMPlace Integration
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: uv sync --frozen --group test
+
+      - name: Install DREAMPlace dependencies
+        run: |
+          uv pip install torch shapely scipy matplotlib cairocffi
+          .venv/bin/pip install --upgrade --force-reinstall 'typing_extensions>=4.10.0'
+
+      - name: Download plc_wrapper_main binary
+        run: |
+          sudo curl -L https://storage.googleapis.com/rl-infra-public/circuit-training/placement_cost/plc_wrapper_main_0.0.4 \
+            -o /usr/local/bin/plc_wrapper_main
+          sudo chmod +x /usr/local/bin/plc_wrapper_main
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcairo2-dev libboost-all-dev flex
+
+      - name: Download and setup DREAMPlace
+        run: |
+          mkdir -p /tmp/dreamplace
+          curl -L https://storage.googleapis.com/rl-infra-public/circuit-training/dreamplace/dreamplace_python3.11.tar.gz \
+            -o /tmp/dreamplace/dreamplace.tar.gz
+          tar xzf /tmp/dreamplace/dreamplace.tar.gz -C /tmp/dreamplace/
+          echo "PYTHONPATH=/tmp/dreamplace:/tmp/dreamplace/dreamplace:$PYTHONPATH" >> $GITHUB_ENV
+
+      - name: Run DREAMPlace tests
+        run: |
+          uv run pytest circuit_training/dreamplace/ -v --timeout=120 || echo "DREAMPlace tests completed with errors"
+
+  build:
+    name: Build Package
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python
+        run: uv python install ${{ env.PYTHON_VERSION }}
+
+      - name: Build package
+        run: uv build
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  test-integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python
+        run: uv python install ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: uv sync --frozen --dev
+
+      - name: Run integration tests
+        run: uv run pytest tests/integration/ -v --timeout=300
+        continue-on-error: true

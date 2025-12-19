@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2021 The Circuit Training Team Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,34 +29,35 @@ python circuittraining/grouping/grouper_main \
 
 from collections.abc import Sequence
 
-from absl import app
-from absl import flags
+from absl import app, flags
+
 from circuit_training.grouping import grouper
 
+
 _NETLIST_FILE = flags.DEFINE_string(
-    'netlist_file', None, 'Path to the input netlist file.'
+    "netlist_file", None, "Path to the input netlist file."
 )
 _OUTPUT_DIR = flags.DEFINE_string(
-    'output_dir', None, 'Base directory to output logs and results.'
+    "output_dir", None, "Base directory to output logs and results."
 )
-_BLOCK_NAME = flags.DEFINE_string('block_name', None, 'Name of the block.')
+_BLOCK_NAME = flags.DEFINE_string("block_name", None, "Name of the block.")
 
-flags.mark_flags_as_required(['output_dir', 'netlist_file', 'block_name'])
+flags.mark_flags_as_required(["output_dir", "netlist_file", "block_name"])
 
 FLAGS = flags.FLAGS
 
 
 def main(argv: Sequence[str]) -> None:
-  if len(argv) > 1:
-    raise app.UsageError('Too many command-line arguments.')
+    if len(argv) > 1:
+        raise app.UsageError("Too many command-line arguments.")
 
-  grouped_plc, placement_file = grouper.group_stdcells(
-      netlist_file=_NETLIST_FILE.value,
-      output_dir=_OUTPUT_DIR.value,
-      block_name=_BLOCK_NAME.value,
-  )
-  print('Saved legalized placement : {}'.format(placement_file))
+    _grouped_plc, placement_file = grouper.group_stdcells(
+        netlist_file=_NETLIST_FILE.value,
+        output_dir=_OUTPUT_DIR.value,
+        block_name=_BLOCK_NAME.value,
+    )
+    print(f"Saved legalized placement : {placement_file}")
 
 
-if __name__ == '__main__':
-  app.run(main)
+if __name__ == "__main__":
+    app.run(main)

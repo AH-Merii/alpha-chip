@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2021 The Circuit Training Team Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,30 +13,31 @@
 # limitations under the License.
 """Common utility functions for testing."""
 
-from absl import flags
 import gin
 import tensorflow as tf
+from absl import flags
 
-flags.DEFINE_multi_string('test_gin_bindings', [], 'Gin bindings.')
+
+flags.DEFINE_multi_string("test_gin_bindings", [], "Gin bindings.")
 
 FLAGS = flags.FLAGS
 
 
 class TestCase(tf.test.TestCase):
-  """Base class for TF-Agents unit tests."""
+    """Base class for TF-Agents unit tests."""
 
-  def setUp(self):
-    super(TestCase, self).setUp()
-    tf.compat.v1.enable_resource_variables()
-    gin.clear_config()
-    gin.parse_config(FLAGS.test_gin_bindings)
+    def setUp(self):
+        super().setUp()
+        tf.compat.v1.enable_resource_variables()
+        gin.clear_config()
+        gin.parse_config(FLAGS.test_gin_bindings)
 
-  def tearDown(self):
-    gin.clear_config()
-    super(TestCase, self).tearDown()
+    def tearDown(self):
+        gin.clear_config()
+        super().tearDown()
 
 
 # Main function so that users of `test_utils.TestCase` can also call
 # `test_utils.main()`.
 def main():
-  tf.test.main()
+    tf.test.main()
