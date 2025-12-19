@@ -184,6 +184,7 @@ addopts = [
     "--ignore=circuit_training/learning/collect_test.py",
     "--ignore=circuit_training/model/model_test.py",
     "--ignore=circuit_training/model/model_lib_test.py",
+    "--ignore=circuit_training/utils/test_utils.py",
     "--ignore=tests/quality/test_type_checking.py",
 ]
 filterwarnings = [
